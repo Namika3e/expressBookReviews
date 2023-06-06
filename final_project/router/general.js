@@ -6,24 +6,20 @@ const public_users = express.Router();
 
 
 public_users.post("/register", (req,res) => {
-
-    
-  //Write your code here
+//Write your code here
   let username = req.body.username;
   let password = req.body.password;
 
-  if (users.length > 0 ) {
-      users.forEach(user => {
-          if (user.username === username) {
-            return res.status(400).json({message: "Username already registered"})
-          } 
-          else {
-            users.push({"username" : username, "password" : password})
-            return res.status(200).json(users)
-        }
-      })  
-      
-  }
+let existingUser = users.find(user => username === user.username);
+
+if (existingUser) {
+    return res.status(400).send('user already exists')
+}
+else {
+    users.push({username, password})
+     res.status(200).json({message: 'Customer successfully registered. You can login'})
+}
+
 
   if (!username || !password && username.length === 0 || password.length === 0) {
       return res.status(400).json({message: 'No Username or password passed' })
@@ -34,7 +30,6 @@ public_users.post("/register", (req,res) => {
 
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
-  //Write your code here
   let myPromise = new Promise((resolve,reject) => {
     if (books) {
         resolve(res.status(200).send(JSON.stringify(books,null,4)))
@@ -53,7 +48,6 @@ public_users.get('/',function (req, res) {
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
-  //Write your code here
   let isbn = req.params.isbn
   const myPromise = new Promise((resolve, reject) => {
   if(isbn && isbn <= 10 ) {
@@ -70,7 +64,6 @@ public_users.get('/isbn/:isbn',function (req, res) {
   
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
-  //Write your code here
   let author = req.params.author
   let bookKeys = Object.keys(books)
   let data = { books:[]}
@@ -97,19 +90,24 @@ public_users.get('/author/:author',function (req, res) {
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
-  //Write your code here
   let title = req.params.title
   let bookKeys = Object.keys(books)
+  let bookByTitle = []
 
     const myPromise = new Promise((resolve, reject) => {
-        for (let i = 0; i < bookKeys.length; i++) {
-            if (title === books[bookKeys[i]]['title'] ) {
-              resolve (res.status(200).json(books[bookKeys[i]]))
+        
+        bookKeys.forEach(key => {
+            if (title === books[key]['title']) {
+                bookByTitle.push(books[key])
             }
-            else if (!title === books[bookKeys[i]]['title']){
-                reject(res.status(404).json({message: 'title does not exist'}))
-            }
+        })
+
+        if (bookByTitle.length > 0) {
+            resolve (res.status(200).json(bookByTitle))
+        } else {
+            reject(res.status(404).json({message: 'book with that title does not exist'}))   
         }
+
     })
     myPromise.then(res => console.log('resolved'))
     .catch(res => console.log('rejected'))
