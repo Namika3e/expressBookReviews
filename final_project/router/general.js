@@ -45,7 +45,7 @@ public_users.get('/',function (req, res) {
     })
 
     myPromise.then(res => console.log('resolved'))
-    myPromise.catch(res => console.log('rejected'))
+    .catch(res => console.log('rejected'))
 
 
 
@@ -65,7 +65,7 @@ public_users.get('/isbn/:isbn',function (req, res) {
 });
 
   myPromise.then(res => console.log('resolved'))
-  myPromise.catch(res => console.log('rejected'))
+  .catch(res => console.log('rejected'))
  });
   
 // Get book details based on author
@@ -73,22 +73,24 @@ public_users.get('/author/:author',function (req, res) {
   //Write your code here
   let author = req.params.author
   let bookKeys = Object.keys(books)
-
-  const myPromise = new Promise((resolve, reject) => {
+  let data = { books:[]}
+  let myPromise = new Promise((resolve, reject) => {
+      
   bookKeys.forEach(key => {
       if (author === books[key]['author']) {
-          let data = books[key]
-      resolve(res.status(200).json(data));
+          data['books'].push(books[key]);
       }
-    //   res.status(200).json( books[key] )
-      else if(!author === books[key]['author']) {
-         reject(res.status(404).json({message:'book not found'}))
-      }
-  })
-  });
+    });
 
-  myPromise.then(res => console.log('resolved', res));
-  myPromise.catch(err => console.log('rejected', err))
+    if (data['books'].length > 0 ) {
+       return resolve(res.status(200).json(data))
+    } else {
+       return reject(res.status(400).json({message:"no book found"}))
+    }
+})
+
+  myPromise.then(res => console.log('resolved'))
+  .catch(err => console.log('rejected'))
 
       
 });
@@ -110,7 +112,7 @@ public_users.get('/title/:title',function (req, res) {
         }
     })
     myPromise.then(res => console.log('resolved'))
-    myPromise.catch(res => console.log('rejected'))
+    .catch(res => console.log('rejected'))
   
 });
 
